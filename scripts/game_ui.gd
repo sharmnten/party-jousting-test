@@ -13,12 +13,7 @@ var root_control: Control
 var page: Control
 var modal: Control
 var countdown_label: Label
-var hud: HBoxContainer
 var roster: Array[JoustPlayer] = []
-var hud_labels: Array[Label] = []
-var effect_labels: Array[Label] = []
-var shown_health: Array[int] = []
-var elapsed: float = 0.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -50,9 +45,6 @@ func _clear_page() -> void:
 		root_control.remove_child(page)
 		page.queue_free()
 	roster.clear()
-	hud_labels.clear()
-	effect_labels.clear()
-	shown_health.clear()
 	page = Control.new()
 	page.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	page.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -162,33 +154,6 @@ func show_lobby(profiles: Array[PlayerProfile]) -> void:
 func show_game(players: Array[JoustPlayer]) -> void:
 	_clear_page()
 	roster = players.duplicate()
-	hud = HBoxContainer.new()
-	hud.position = Vector2(42, 34)
-	hud.size = Vector2(1196, 85)
-	hud.add_theme_constant_override("separation", 8)
-	page.add_child(hud)
-	for player in roster:
-		var card := PanelContainer.new()
-		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		card.add_theme_stylebox_override("panel", panel_style(Color(0.05, 0.09, 0.16, 0.82)))
-		hud.add_child(card)
-		var column := VBoxContainer.new()
-		column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		card.add_child(column)
-		var title := label("P%d [%s]" % [player.profile.id + 1, player.profile.key_label()], 17, AnimalSkin.COLORS[player.profile.appearance])
-		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		column.add_child(title)
-		var health := label("", 15)
-		health.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		column.add_child(health)
-		hud_labels.append(health)
-		shown_health.append(player.health)
-		var effects := label("", 11, Color("9bd7d3"))
-		effects.clip_text = true
-		effects.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		column.add_child(effects)
-		effect_labels.append(effects)
 	var tip := label("TAP YOUR KEY TO FLAP   •   3 COINS = +1 HEALTH   •   LASER: FLAP TO FIRE   •   ESC PAUSES", 14, Color("94a8c4"))
 	tip.position = Vector2(200, 656)
 	page.add_child(tip)
@@ -198,7 +163,6 @@ func show_game(players: Array[JoustPlayer]) -> void:
 	countdown_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	countdown_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	page.add_child(countdown_label)
-	refresh_hud()
 
 func set_countdown(text: String) -> void:
 	if is_instance_valid(countdown_label):
@@ -207,30 +171,8 @@ func set_countdown(text: String) -> void:
 		create_tween().tween_property(countdown_label, "modulate:a", 1.0, 0.15)
 
 func refresh_hud() -> void:
-	for i in range(roster.size()):
-		var player := roster[i]
-		if not is_instance_valid(player) or i >= hud_labels.size():
-			continue
-		hud_labels[i].text = ("♥".repeat(player.health) + "  %d/3" % player.coins) if player.alive else "OUT"
-		if player.health != shown_health[i]:
-			shown_health[i] = player.health
-			hud_labels[i].self_modulate = Color("ff7c99")
-			create_tween().tween_property(hud_labels[i], "self_modulate", Color.WHITE, 0.3)
-		hud_labels[i].modulate = Color.WHITE if player.alive else Color("69768c")
-		var text: Array[String] = []
-		for kind in range(PowerupCatalog.Kind.size()):
-			if player.effects.has(kind):
-				var time := player.effects.remaining[kind]
-				text.append(PowerupCatalog.SYMBOLS[kind] + (" %ds" % ceili(time) if is_finite(time) else ""))
-		effect_labels[i].text = " · ".join(text)
-		if player.is_recovering():
-			effect_labels[i].text = "EXPOSED %ds" % ceili(player.rest_remaining) if player.recovery == JoustPlayer.Recovery.RESTING else "DOWN"
-
-func _process(delta: float) -> void:
-	elapsed += delta
-	if elapsed > 0.1:
-		elapsed = 0
-		refresh_hud()
+	# Kept as a signal target for Arena; the in-match top HUD is intentionally removed.
+	return
 
 func hide_modal() -> void:
 	if is_instance_valid(modal):
