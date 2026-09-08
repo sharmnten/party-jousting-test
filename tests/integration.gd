@@ -104,6 +104,18 @@ func run() -> void:
 	pickup._on_body_entered(a)
 	pickup._on_body_entered(b)
 	check(pickup.taken, "Pickup can be claimed only once")
+	# Moving hazard blocks share the vertical edge sweep but damage players.
+	arena.hazard_spawner.random.seed = 67890
+	for i in range(8):
+		arena.hazard_spawner.spawn()
+	var hazard_count: int = 0
+	var hazard_top := arena.rules.boundary_thickness + arena.rules.pickup_boundary_margin + arena.rules.hud_height
+	var hazard_bottom := arena.rules.arena_size.y - arena.rules.boundary_thickness - arena.rules.pickup_boundary_margin - 1.0
+	for hazard in arena.hazard_spawner.hazards:
+		hazard_count += 1
+		check(is_equal_approx(hazard.position.y, hazard_top) or is_equal_approx(hazard.position.y, hazard_bottom), "Hazard starts at a safe vertical edge")
+		check(hazard.sweep_speed > 0 and hazard.sweep_direction != 0, "Hazard has a vertical sweep direction and speed")
+	check(hazard_count == arena.rules.max_hazards, "Hazard capacity is enforced")
 	# Physical boundary contacts use CharacterBody2D movement, including contact latch.
 	a.effects.clear()
 	a.health = 5

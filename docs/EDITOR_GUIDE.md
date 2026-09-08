@@ -77,7 +77,7 @@ Boundaries (Node2D)
 └── Ceiling (StaticBody2D)
 ```
 
-They need no separate hazard script. Side walls reverse horizontal direction with no damage. Floor and ceiling each deal one damage; surviving damage starts the recovery described above. A protected or shielded boundary touch still bounces away normally. Player keeps a contact latch per damaging boundary; a new damage event requires real separation of more than 3 pixels. A shield blocks and is consumed by either boundary. The recovery landing cannot deal a second damage hit.
+Floor and ceiling need no separate script because Player handles those boundary contacts. Side walls reverse horizontal direction with no damage. Floor and ceiling each deal one damage; surviving damage starts the recovery described above. A protected or shielded boundary touch still bounces away normally. Player keeps a contact latch per damaging boundary; a new damage event requires real separation of more than 3 pixels. A shield blocks and is consumed by either boundary. The recovery landing cannot deal a second damage hit.
 
 `take_damage()` rejects dead/inactive/protected players, checks invincibility and shield, subtracts health, emits health/damage signals, then marks lethal victims dead before emitting elimination. Body-contact shield counters are resolved by `CombatResolver` before height-based damage. Dead bodies lose collision layers immediately, clear effects and input, then spin/fall/fade for 0.8 seconds. They cannot collect, attack, shoot or revive. The round result is evaluated after the entire simulation step, including projectiles, so a simultaneous final knockout can produce a draw.
 
@@ -91,17 +91,26 @@ Coin (Area2D)                 scripts/pickup.gd; Is Coin = On
 
 PowerUp (Area2D)              scripts/pickup.gd; Is Coin = Off
 └── CollisionShape2D          CircleShape2D, radius 19
+
+HazardBlock (Area2D)          scripts/hazard_block.gd; layer 7, mask 1
+└── CollisionShape2D          RectangleShape2D, 44 × 44
 ```
 
 Pickup → Kind chooses the enum type for a hand-placed PowerUp. Dynamic spawns assign it before adding the node. Add a Node2D named PickupSpawner under Arena and attach `pickup_spawner.gd`; the ready scene already contains it. Its Rules Resource is set by Arena. Its Weights array corresponds to `PowerupCatalog.Kind` in enum order.
 
-The spawner checks player radius plus a 60-pixel buffer, other pickup positions, boundary margins, and physical obstacles on the reserved hazard/boundary layers. It skips a spawn after 80 rejected candidates. Each pickup can be claimed once, immediately latches that claim, and defers removal of its monitoring. Its `tree_exiting` callback removes the spawner reference, including when an uncollected pickup is removed externally. Coins and powerups have separate capacity limits.
+The pickup spawner checks player radius plus a 60-pixel buffer, other pickup positions, boundary margins, and physical obstacles on the reserved hazard/boundary layers. It skips a spawn after 80 rejected candidates. Each pickup can be claimed once, immediately latches that claim, and defers removal of its monitoring. Its `tree_exiting` callback removes the spawner reference, including when an uncollected pickup is removed externally. Coins and powerups have separate capacity limits.
 
 Three coins restore one health point, capped at five, and subtract three from the local coin counter. The match no longer overlays a per-player top HUD.
 
 Coins and powerups set `origin_position` on entry and move the Area2D itself in `_physics_process()` across the arena. Each spawn starts at the top or bottom safe edge, crosses to the opposite edge, then reverses. The visual drawing stays local to the moving node, so the collection shape follows it. `PickupSpawner.powerup_sweep_speed` controls powerup travel and defaults to 120 pixels per second; `coin_sweep_speed` defaults to 90.
 
 **Test:** For faster manual checks, lower Coin Interval in `default_rules.tres`. Collect two coins and verify no healing; collect a third and see one heart restored. At five hearts the cap holds. Inspect the Remote tree while pickups accumulate: at most ten coins and four powerups. Restore normal timing afterward.
+
+## Moving hazard blocks
+
+`HazardSpawner` creates up to `GameRules.max_hazards` `HazardBlock` Area2D nodes after `first_hazard_delay`, then replenishes them on the configured interval. A hazard starts at the top or bottom safe edge, moves vertically at `hazard_sweep_speed`, reverses at the opposite edge, and keeps its RectangleShape2D attached to the moving block. The Area2D uses layer 7 and detects layer-1 players directly. A first body contact calls `take_damage(1)`; the block latches that player until they separate, so a held overlap cannot drain hearts every frame. Damage still respects player protection and recovery rules.
+
+**Test:** Set the hazard interval low, start a round, and watch red blocks cross the arena. Touch one once, verify one heart disappears and the player enters recovery, then separate and touch it again after recovery.
 
 ## 5. Modular effects and laser
 
@@ -130,6 +139,7 @@ Main (Node)                  scripts/main.gd
     │   └── Ceiling (StaticBody2D)
     ├── Players (Node2D)     runtime Player.tscn instances
     ├── PickupSpawner (Node2D) scripts/pickup_spawner.gd
+    ├── HazardSpawner (Node2D) scripts/hazard_spawner.gd
     ├── Projectiles (Node2D) runtime Laser.tscn instances
     ├── Feedback (Node2D)    scripts/feedback.gd
     └── Camera2D             fixed arena center, no follow scrolling
@@ -151,7 +161,7 @@ Spawn positions are distributed across eight separated cells with small random j
 | Ceiling | 4 | 8 | None | 0 |
 | PowerUp | 5 | 16 | 1 | 1 |
 | Coin | 6 | 32 | 1 | 1 |
-| Future hazards | 7 | 64 | As appropriate | — |
+| HazardBlock | 7 | 64 | 1 | 1 |
 | Laser ray | No body layer | — | 1, 2, 3, 4 | 15 |
 
 Player–player contacts deliberately bypass the engine's movement mask and are resolved centrally by CombatResolver. Players remain on layer 1 so pickups and lasers can detect them. Do not add layer 1 to Player's mask without also replacing the custom pair solver. The reserved hazard layer is excluded by spawn queries; implementing a new harmful hazard still requires its damage behavior.
@@ -161,19 +171,20 @@ Player–player contacts deliberately bypass the engine's movement mask and are 
 | Emitter | Signal | Consumer |
 |---|---|---|
 | Player | `player_damaged(player, amount)` | Arena feedback and hit-stop |
-| Player | `player_eliminated(player)` | Arena particles/audio and HUD refresh |
-| Player | `health_changed(player)`, `coin_collected(player)` | HUD refresh |
+| Player | `player_eliminated(player)` | Arena particles/audio and status signal |
+| Player | `health_changed(player)`, `coin_collected(player)` | Arena status signal |
 | Player | `flapped(player)` | Flap sound |
 | Player | `laser_requested(player)` | Arena creates laser |
-| Player | `powerup_collected(player, kind)` | HUD refresh |
-| Effects | `changed` | HUD refresh |
+| Player | `powerup_collected(player, kind)` | Arena status signal |
+| Effects | `changed` | Arena status signal |
 | Pickup | `body_entered(body)` | Pickup's own handler |
 | Pickup | `collected(pickup, player)` | Spawner forwards pickup event |
 | Pickup | `tree_exiting` | Spawner drops reference |
 | Spawner | `pickup_taken(pickup, player)` | Arena collection particles/audio |
+| HazardSpawner | `hazard_hit(hazard, player)` | Arena status signal |
 | Laser | `impacted(location, color)` | Arena impact particles |
 | Arena | `countdown_changed(text)` | UI countdown |
-| Arena | `status_changed` | UI HUD |
+| Arena | `status_changed` | Optional UI/status listeners; no in-match top HUD is currently shown |
 | Arena | `round_finished(winner)` | Main victory transition; null winner = draw |
 | UI | Menu, appearance and removal signals | Main flow handlers |
 

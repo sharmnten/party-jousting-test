@@ -14,7 +14,8 @@ Open `project.godot` in Godot and press **F6 on `scenes/Main.tscn`**, or **F5** 
 6. Three coins restore one heart, up to five. Each group of three is consumed even at full health. Coins left over carry through the current round only.
 7. Lasers last **five seconds**. During that time **each flap also fires** in your facing direction. A laser hit deals one damage and consumes the projectile, not the five-second ability.
 8. Coins and powerups spawn at the top or bottom safe edge of the arena and sweep vertically to the opposite edge, then reverse. Their Area2D collection shapes move with them. Spawn positions keep the sweep clear of the ceiling and walls.
-9. Escape pauses/resumes. The pause menu can mute sounds or return to the lobby. The last survivor wins; simultaneous final eliminations produce a draw. Enter rematches with the same roster and appearances.
+9. Hazard blocks spawn at the top or bottom safe edge and sweep vertically like pickups. Touching one removes one health and starts the normal recovery sequence; each continuous overlap can damage only once.
+10. Escape pauses/resumes. The pause menu can mute sounds or return to the lobby. The last survivor wins; simultaneous final eliminations produce a draw. Enter rematches with the same roster and appearances.
 
 Letters available: Q W E R T Y U I O P A S D F G H J K L Z X C V B N M. Physical key bindings keep positions consistent. The keyboard hardware must support the chosen simultaneous presses; eight-player support cannot remove a keyboard's rollover limit.
 
@@ -39,9 +40,9 @@ First powerup appears about 5 seconds after GO; subsequent pickups appear every 
 
 ## Files and tuning
 
-- `scenes/`: Main, Arena, Player, Coin, PowerUp and Laser scenes.
-- `scripts/`: separate input/flow, UI, arena, player, combat, effects, catalog, spawning, visual and audio scripts.
-- `resources/default_rules.tres`: select this in the FileSystem dock to tune gravity, flap strength, speed, radius, health, boundary bounces, protection, arena size, timers and spawn capacities. `GameRules` exposes comments beside physics values. The same Resource is passed to every gameplay component. `damage_rest_seconds` controls exposed floor rest; `PickupSpawner.powerup_sweep_speed` controls powerup top-to-bottom travel and defaults to 120 pixels/second; `coin_sweep_speed` defaults to 90.
+- `scenes/`: Main, Arena, Player, Coin, PowerUp, HazardBlock and Laser scenes.
+- `scripts/`: separate input/flow, UI, arena, player, combat, effects, catalog, pickup/hazard spawning, visual and audio scripts.
+- `resources/default_rules.tres`: select this in the FileSystem dock to tune gravity, flap strength, speed, radius, health, boundary bounces, protection, arena size, timers and spawn capacities. `GameRules` exposes comments beside physics values. The same Resource is passed to every gameplay component. `damage_rest_seconds` controls exposed floor rest; `PickupSpawner.powerup_sweep_speed` controls powerup top-to-bottom travel and defaults to 120 pixels/second; `coin_sweep_speed` defaults to 90; `hazard_sweep_speed` defaults to 95.
 - `docs/EDITOR_GUIDE.md`: six build stages, exact node/script attachments, collision layers, signals, Inspector settings and editor checks.
 - `tests/`: executable behavior tests and capture scripts. `tests/artifacts/` contains rendered screenshots.
 

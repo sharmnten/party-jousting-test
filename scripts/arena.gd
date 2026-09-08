@@ -7,6 +7,7 @@ signal status_changed
 const PLAYER := preload("res://scenes/Player.tscn")
 const LASER := preload("res://scenes/Laser.tscn")
 @onready var spawner: PickupSpawner = $PickupSpawner
+@onready var hazard_spawner: HazardSpawner = $HazardSpawner
 @onready var feedback: GameFeedback = $Feedback
 var players: Array[JoustPlayer] = []
 var shots: Array[LaserShot] = []
@@ -24,6 +25,9 @@ func _ready() -> void:
 	build_boundaries()
 	spawner.rules = rules
 	spawner.pickup_taken.connect(_pickup_taken)
+	hazard_spawner.rules = rules
+	hazard_spawner.hazard_sweep_speed = rules.hazard_sweep_speed
+	hazard_spawner.hazard_hit.connect(_hazard_hit)
 
 func setup(profiles: Array[PlayerProfile]) -> void:
 	countdown = rules.countdown_seconds
@@ -45,6 +49,7 @@ func setup(profiles: Array[PlayerProfile]) -> void:
 		player.powerup_collected.connect(func(_p: JoustPlayer, _kind: int): status_changed.emit())
 		player.effects.changed.connect(func(): status_changed.emit())
 	spawner.start(players)
+	hazard_spawner.start(players)
 	status_changed.emit()
 
 func spawn_positions(count: int) -> Array[Vector2]:
@@ -93,6 +98,7 @@ func _physics_process(delta: float) -> void:
 		if is_instance_valid(shot):
 			shot.tick(delta)
 	spawner.tick(delta)
+	hazard_spawner.tick(delta)
 	var survivors: Array[JoustPlayer] = []
 	for player in players:
 		if player.alive:
@@ -152,6 +158,9 @@ func _pickup_taken(pickup: ArenaPickup, player: JoustPlayer) -> void:
 	var color := Color("ffd477") if pickup.is_coin else PowerupCatalog.COLORS[pickup.kind]
 	feedback.burst(player.position, color)
 	feedback.play("coin" if pickup.is_coin else "power")
+
+func _hazard_hit(_hazard: HazardBlock, _player: JoustPlayer) -> void:
+	status_changed.emit()
 
 func build_boundaries() -> void:
 	var size := rules.arena_size
