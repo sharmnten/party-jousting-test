@@ -63,7 +63,7 @@ The collision circle tracks Tiny/Giant. Ears, beaks and wings are decorative. On
 
 ## 3. Hazards, health and elimination
 
-The top 136 pixels remain reserved as a clear gameplay margin. The damaging ceiling is at Y=160 (top margin plus boundary thickness), and no in-match top HUD overlays the arena. `GameRules.hud_height` controls this inset.
+The in-match top HUD is removed, so the arena uses the full vertical viewport. The damaging ceiling is at Y=24 (the boundary thickness), and `GameRules.hud_height` remains at zero unless a future overlay needs a reserved inset.
 
 Surviving any health damage now starts recovery: fall vertically to the floor, remain motionless for `GameRules.damage_rest_seconds` (default 2.0), then launch upward with fresh protection. The rest countdown starts on landing. Input, pickups, player contact and further damage are ignored during recovery; other players pass through the protected body until a real incoming player-body contact reaches the resting state. That contact is a deliberate exposed-floor execution: it eliminates the resting player immediately and bypasses hearts, shield and invincibility. Timed powerups continue expiring. Pause and hit-stop freeze the recovery countdown. The player label shows DOWN while falling and EXPOSED with seconds remaining on the floor. A shield-blocked hit does not start recovery, and lethal hits still eliminate immediately.
 

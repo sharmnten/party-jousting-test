@@ -90,7 +90,7 @@ func run() -> void:
 	var sweep_top := arena.rules.boundary_thickness + arena.rules.pickup_boundary_margin + arena.rules.hud_height
 	var sweep_bottom := arena.rules.arena_size.y - arena.rules.boundary_thickness - arena.rules.pickup_boundary_margin - 1.0
 	for pickup in arena.spawner.pickups:
-		check(pickup.position.y > arena.rules.boundary_thickness + arena.rules.hud_height + 60, "Pickups stay clear of the HUD and ceiling")
+		check(pickup.position.y > arena.rules.boundary_thickness + arena.rules.hud_height + 60, "Pickups stay clear of the ceiling")
 		check(is_equal_approx(pickup.position.y, sweep_top) or is_equal_approx(pickup.position.y, sweep_bottom), "Pickup starts at a safe vertical edge")
 		check(pickup.sweep_speed > 0 and pickup.sweep_direction != 0, "Pickup has a vertical sweep direction and speed")
 		if pickup.is_coin:
