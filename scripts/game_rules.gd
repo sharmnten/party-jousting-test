@@ -1,0 +1,34 @@
+class_name GameRules
+extends Resource
+## All units are pixels and seconds. Shared by the arena and every player.
+@export var arena_size := Vector2(1280, 720)
+@export var boundary_thickness: float = 24.0
+@export var hud_height: float = 136.0 # Reserved above the ceiling so HUD never hides play.
+@export var starting_health: int = 3
+@export var max_health: int = 5
+@export var gravity: float = 720.0 # Lower for longer, floatier arcs.
+@export var flap_strength: float = 310.0 # Resets upward speed; taps always feel equal.
+@export var horizontal_speed: float = 155.0
+@export var max_fall_speed: float = 560.0
+@export var player_radius: float = 18.0
+@export var knockback: float = 150.0
+@export var bounce_damping: float = 0.8
+@export var attack_bounce: float = 265.0
+@export var floor_bounce: float = 380.0
+@export var ceiling_bounce: float = 180.0
+@export var damage_protection: float = 0.75
+@export_range(0.1, 10.0, 0.1) var damage_rest_seconds: float = 2.0 # Starts after landing, not when hit.
+@export var spawn_protection: float = 1.2
+@export var countdown_seconds: float = 3.0
+@export var first_powerup_delay: float = 5.0
+@export var powerup_interval_min: float = 7.0
+@export var powerup_interval_max: float = 12.0
+@export var max_powerups: int = 4
+@export var coin_interval: float = 2.5
+@export var max_coins: int = 10
+@export var pickup_boundary_margin: float = 65.0
+@export var effect_duration: float = 5.0
+@export var laser_duration: float = 5.0
+@export var invincibility_duration: float = 3.0
+@export var laser_speed: float = 850.0
+@export var hit_stop_seconds: float = 0.045
