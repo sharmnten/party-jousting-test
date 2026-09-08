@@ -118,7 +118,6 @@ func start_round() -> void:
 	arena.feedback.muted = muted
 	arena.round_finished.connect(_finished)
 	arena.countdown_changed.connect(ui.set_countdown)
-	arena.status_changed.connect(ui.refresh_hud)
 	arena.setup(profiles)
 	ui.show_game(arena.players)
 
