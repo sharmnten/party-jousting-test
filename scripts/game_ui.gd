@@ -13,7 +13,6 @@ var root_control: Control
 var page: Control
 var modal: Control
 var countdown_label: Label
-var roster: Array[JoustPlayer] = []
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -44,7 +43,6 @@ func _clear_page() -> void:
 	if is_instance_valid(page):
 		root_control.remove_child(page)
 		page.queue_free()
-	roster.clear()
 	page = Control.new()
 	page.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	page.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -153,7 +151,6 @@ func show_lobby(profiles: Array[PlayerProfile]) -> void:
 
 func show_game(players: Array[JoustPlayer]) -> void:
 	_clear_page()
-	roster = players.duplicate()
 	var tip := label("TAP YOUR KEY TO FLAP   •   3 COINS = +1 HEALTH   •   LASER: FLAP TO FIRE   •   ESC PAUSES", 14, Color("94a8c4"))
 	tip.position = Vector2(200, 656)
 	page.add_child(tip)
@@ -169,10 +166,6 @@ func set_countdown(text: String) -> void:
 		countdown_label.text = text
 		countdown_label.modulate.a = 0.4
 		create_tween().tween_property(countdown_label, "modulate:a", 1.0, 0.15)
-
-func refresh_hud() -> void:
-	# Kept as a signal target for Arena; the in-match top HUD is intentionally removed.
-	return
 
 func hide_modal() -> void:
 	if is_instance_valid(modal):
