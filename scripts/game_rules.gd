@@ -3,7 +3,7 @@ extends Resource
 ## All units are pixels and seconds. Shared by the arena and every player.
 @export var arena_size := Vector2(1280, 720)
 @export var boundary_thickness: float = 24.0
-@export var hud_height: float = 136.0 # Reserved above the ceiling so HUD never hides play.
+@export var hud_height: float = 136.0 # Reserved above the ceiling to keep a clear top gameplay margin.
 @export var starting_health: int = 3
 @export var max_health: int = 5
 @export var gravity: float = 720.0 # Lower for longer, floatier arcs.

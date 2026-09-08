@@ -2,7 +2,7 @@
 
 Approved scope: 2–8 local keyboard players; fresh presses flap; automatic horizontal motion; walls reverse direction; both floor and ceiling damage and bounce. Three coins restore one heart (maximum five). Laser lasts five seconds and fires on each flap. No gamepads.
 
-Damage recovery update: nonlethal health damage sends a player vertically to the floor, where they remain motionless for two seconds before an automatic upward recovery bounce. The timer begins on landing and is exported as `damage_rest_seconds`. Flaps, lasers, pickups, further damage and player pair interactions are disabled during recovery. Existing temporary effects continue expiring. Pause/hit-stop freeze the rest timer. Shield absorption does not stun; lethal hits still eliminate. Both the player's label and HUD display the recovery state.
+Damage recovery update: nonlethal health damage sends a player vertically to the floor, where they remain motionless for two seconds before an automatic upward recovery bounce. The timer begins on landing and is exported as `damage_rest_seconds`. Flaps, lasers, pickups, further damage and player pair interactions are disabled during recovery. Existing temporary effects continue expiring. Pause/hit-stop freeze the rest timer. Shield absorption does not stun; lethal hits still eliminate. The player label displays the recovery state; the in-match top HUD is intentionally omitted.
 
 Flow: title → letter-key joining/appearance selection → safely distributed spawns → countdown → last-player-standing round → victory/rematch/lobby. Escape pauses. Enter starts or rematches. Lobby cards support removing a player. The assigned letter cycles that player's appearance in the lobby.
 
