@@ -149,7 +149,7 @@ func show_lobby(profiles: Array[PlayerProfile]) -> void:
 	row.add_child(label("%d / 8 joined" % profiles.size(), 18, Color("75ddc4")))
 	column.add_child(label("Use spaced-out keys. Some keyboards limit simultaneous presses; test your chosen keys together.", 15, Color("8c9bb8")))
 
-func show_game(players: Array[JoustPlayer]) -> void:
+func show_game(_players: Array[JoustPlayer]) -> void:
 	_clear_page()
 	var tip := label("TAP YOUR KEY TO FLAP   •   3 COINS = +1 HEALTH   •   LASER: FLAP TO FIRE   •   ESC PAUSES", 14, Color("94a8c4"))
 	tip.position = Vector2(200, 656)
